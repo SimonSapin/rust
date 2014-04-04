@@ -2085,13 +2085,13 @@ pub trait StrSlice<'a> {
     /// The muffin man, the muffin man, ...";
     ///
     /// assert_eq!(s.replace("muffin man", "little lamb"),
-    ///            ~"Do you know the little lamb,
-    /// The little lamb, the little lamb, ...");
+    ///            Owned(~"Do you know the little lamb,
+    /// The little lamb, the little lamb, ..."));
     ///
     /// // not found, so no change.
-    /// assert_eq!(s.replace("cookie monster", "little lamb"), s);
+    /// assert_eq!(s.replace("cookie monster", "little lamb"), Slice(s.as_slice()));
     /// ```
-    fn replace(&self, from: &str, to: &str) -> ~str;
+    fn replace<'a>(&'a self, from: &str, to: &str) -> MaybeOwned<'a>;
 
     /// Copy a slice into a new owned str.
     fn to_owned(&self) -> ~str;
@@ -2573,16 +2573,21 @@ impl<'a> StrSlice<'a> for &'a str {
         }
     }
 
-    fn replace(&self, from: &str, to: &str) -> ~str {
-        let mut result = ~"";
-        let mut last_end = 0;
-        for (start, end) in self.match_indices(from) {
+    fn replace<'a>(&'a self, from: &str, to: &str) -> MaybeOwned<'a> {
+        let mut iterator = self.match_indices(from);
+        let (mut result, mut last_end) = match iterator.next() {
+            None => return self.into_maybe_owned(),
+            Some((start, end)) => {
+                (unsafe{raw::slice_bytes(*self, 0, start)}.to_owned(), end)
+            }
+        };
+        for (start, end) in iterator {
             result.push_str(unsafe{raw::slice_bytes(*self, last_end, start)});
             result.push_str(to);
             last_end = end;
         }
         result.push_str(unsafe{raw::slice_bytes(*self, last_end, self.len())});
-        result
+        result.into_maybe_owned()
     }
 
     #[inline]
@@ -3392,13 +3397,13 @@ mod tests {
     #[test]
     fn test_replace() {
         let a = "a";
-        assert_eq!("".replace(a, "b"), ~"");
-        assert_eq!("a".replace(a, "b"), ~"b");
-        assert_eq!("ab".replace(a, "b"), ~"bb");
+        assert_eq!("".replace(a, "b"), Slice(""));
+        assert_eq!("a".replace(a, "b"), Owned(~"b"));
+        assert_eq!("ab".replace(a, "b"), Owned(~"bb"));
         let test = "test";
         assert!(" test test ".replace(test, "toast") ==
-            ~" toast toast ");
-        assert_eq!(" test test ".replace(test, ""), ~"   ");
+            Owned(~" toast toast "));
+        assert_eq!(" test test ".replace(test, ""), Owned(~"   "));
     }
 
     #[test]
@@ -3408,7 +3413,7 @@ mod tests {
 
         let a = ~"ประเ";
         let a2 = ~"دولة الكويتทศไทย中华";
-        assert_eq!(data.replace(a, repl), a2);
+        assert_eq!(data.replace(a, repl), Owned(a2));
     }
 
     #[test]
@@ -3418,7 +3423,7 @@ mod tests {
 
         let b = ~"ะเ";
         let b2 = ~"ปรدولة الكويتทศไทย中华";
-        assert_eq!(data.replace(b, repl), b2);
+        assert_eq!(data.replace(b, repl), Owned(b2));
     }
 
     #[test]
@@ -3428,7 +3433,7 @@ mod tests {
 
         let c = ~"中华";
         let c2 = ~"ประเทศไทยدولة الكويت";
-        assert_eq!(data.replace(c, repl), c2);
+        assert_eq!(data.replace(c, repl), Owned(c2));
     }
 
     #[test]
@@ -3437,7 +3442,7 @@ mod tests {
         let repl = ~"دولة الكويت";
 
         let d = ~"ไท华";
-        assert_eq!(data.replace(d, repl), data);
+        assert_eq!(data.replace(d, repl), Slice(data.as_slice()));
     }
 
     #[test]
