@@ -65,6 +65,7 @@ pub mod str;
 pub mod string;
 pub mod vec;
 pub mod hash;
+pub mod wtf8;
 
 mod deque;
 

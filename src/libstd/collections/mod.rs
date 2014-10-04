@@ -21,6 +21,7 @@ pub use core_collections::{PriorityQueue, RingBuf, SmallIntMap};
 pub use core_collections::{TreeMap, TreeSet, TrieMap, TrieSet};
 pub use core_collections::{bitv, btree, dlist, enum_set};
 pub use core_collections::{priority_queue, ringbuf, smallintmap, treemap, trie};
+pub use core_collections::{wtf8};
 
 pub use self::hashmap::{HashMap, HashSet};
 pub use self::lru_cache::LruCache;
