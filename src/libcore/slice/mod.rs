@@ -62,6 +62,16 @@ struct Repr<T> {
     pub len: usize,
 }
 
+#[lang = "slice_u8"]
+#[cfg(not(stage0))]
+impl [u8] {
+    /// Whether this byte string is entirely within the ASCII range.
+    #[stable(feature = "ascii", since = "1.22.0")]
+    pub fn is_ascii(&self) -> bool {
+        self.iter().all(|&b| b < 0x80)
+    }
+}
+
 //
 // Extension traits
 //

@@ -14,6 +14,12 @@ use core::result::Result::{Ok, Err};
 use rand::{Rng, XorShiftRng};
 
 #[test]
+fn is_ascii() {
+    assert!(b"ab~\x7F"[..].is_ascii());
+    assert!(!b"\x80"[..].is_ascii());
+}
+
+#[test]
 fn test_binary_search() {
     let b = [1, 2, 4, 6, 8, 9];
     assert!(b.binary_search_by(|v| v.cmp(&6)) == Ok(3));
