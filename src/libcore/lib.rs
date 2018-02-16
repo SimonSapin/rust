@@ -152,7 +152,6 @@ pub mod prelude;
 
 pub mod intrinsics;
 pub mod mem;
-pub mod nonzero;
 pub mod ptr;
 
 /* Core language traits */
@@ -189,6 +188,7 @@ pub mod time;
 // note: does not need to be public
 mod char_private;
 mod iter_private;
+mod nonzero;
 mod tuple;
 mod unit;
 

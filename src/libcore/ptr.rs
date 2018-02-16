@@ -23,7 +23,7 @@ use fmt;
 use hash;
 use marker::{PhantomData, Unsize};
 use mem;
-#[allow(deprecated)] use nonzero::NonZero;
+use nonzero::NonZero;
 
 use cmp::Ordering::{self, Less, Equal, Greater};
 
@@ -2510,7 +2510,6 @@ impl<T: ?Sized> PartialOrd for *mut T {
 #[unstable(feature = "ptr_internals", issue = "0",
            reason = "use NonNull instead and consider PhantomData<T> \
                      (if you also use #[may_dangle]), Send, and/or Sync")]
-#[allow(deprecated)]
 pub struct Unique<T: ?Sized> {
     pointer: NonZero<*const T>,
     // NOTE: this marker has no consequences for variance, but is necessary
@@ -2558,7 +2557,6 @@ impl<T: Sized> Unique<T> {
 }
 
 #[unstable(feature = "ptr_internals", issue = "0")]
-#[allow(deprecated)]
 impl<T: ?Sized> Unique<T> {
     /// Creates a new `Unique`.
     ///
@@ -2623,7 +2621,6 @@ impl<T: ?Sized> fmt::Pointer for Unique<T> {
 }
 
 #[unstable(feature = "ptr_internals", issue = "0")]
-#[allow(deprecated)]
 impl<'a, T: ?Sized> From<&'a mut T> for Unique<T> {
     fn from(reference: &'a mut T) -> Self {
         Unique { pointer: NonZero(reference as _), _marker: PhantomData }
@@ -2631,7 +2628,6 @@ impl<'a, T: ?Sized> From<&'a mut T> for Unique<T> {
 }
 
 #[unstable(feature = "ptr_internals", issue = "0")]
-#[allow(deprecated)]
 impl<'a, T: ?Sized> From<&'a T> for Unique<T> {
     fn from(reference: &'a T) -> Self {
         Unique { pointer: NonZero(reference as _), _marker: PhantomData }
@@ -2664,7 +2660,7 @@ impl<'a, T: ?Sized> From<NonNull<T>> for Unique<T> {
 /// provide a public API that follows the normal shared XOR mutable rules of Rust.
 #[stable(feature = "nonnull", since = "1.25.0")]
 pub struct NonNull<T: ?Sized> {
-    #[allow(deprecated)] pointer: NonZero<*const T>,
+    pointer: NonZero<*const T>,
 }
 
 /// `NonNull` pointers are not `Send` because the data they reference may be aliased.
@@ -2691,7 +2687,6 @@ impl<T: Sized> NonNull<T> {
     }
 }
 
-#[allow(deprecated)]
 impl<T: ?Sized> NonNull<T> {
     /// Creates a new `NonNull`.
     ///
@@ -2814,7 +2809,6 @@ impl<T: ?Sized> From<Unique<T>> for NonNull<T> {
 }
 
 #[stable(feature = "nonnull", since = "1.25.0")]
-#[allow(deprecated)]
 impl<'a, T: ?Sized> From<&'a mut T> for NonNull<T> {
     fn from(reference: &'a mut T) -> Self {
         NonNull { pointer: NonZero(reference as _) }
@@ -2822,7 +2816,6 @@ impl<'a, T: ?Sized> From<&'a mut T> for NonNull<T> {
 }
 
 #[stable(feature = "nonnull", since = "1.25.0")]
-#[allow(deprecated)]
 impl<'a, T: ?Sized> From<&'a T> for NonNull<T> {
     fn from(reference: &'a T) -> Self {
         NonNull { pointer: NonZero(reference as _) }
