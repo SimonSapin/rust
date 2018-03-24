@@ -23,7 +23,6 @@ macro_rules! impl_nonzero_fmt {
     ( #[$stability: meta] ( $( $Trait: ident ),+ ) for $Ty: ident ) => {
         $(
             #[$stability]
-            #[allow(deprecated)]
             impl fmt::$Trait for $Ty {
                 #[inline]
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -35,7 +34,7 @@ macro_rules! impl_nonzero_fmt {
 }
 
 macro_rules! nonzero_integers {
-    ( #[$stability: meta] #[$deprecation: meta] $( $Ty: ident($Int: ty); )+ ) => {
+    ( #[$stability: meta] $( $Ty: ident($Int: ty); )+ ) => {
         $(
             /// An integer that is known not to equal zero.
             ///
@@ -47,7 +46,6 @@ macro_rules! nonzero_integers {
             /// assert_eq!(size_of::<Option<std::num::NonZeroU32>>(), size_of::<u32>());
             /// ```
             #[$stability]
-            #[$deprecation]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             pub struct $Ty(NonZero<$Int>);
 
@@ -93,26 +91,12 @@ macro_rules! nonzero_integers {
 
 nonzero_integers! {
     #[unstable(feature = "nonzero", issue = "49137")]
-    #[allow(deprecated)]  // Redundant, works around "error: inconsistent lockstep iteration"
     NonZeroU8(u8);
     NonZeroU16(u16);
     NonZeroU32(u32);
     NonZeroU64(u64);
     NonZeroU128(u128);
     NonZeroUsize(usize);
-}
-
-nonzero_integers! {
-    #[unstable(feature = "nonzero", issue = "49137")]
-    #[rustc_deprecated(since = "1.26.0", reason = "\
-        signed non-zero integers are considered for removal due to lack of known use cases. \
-        If you’re using them, please comment on https://github.com/serde-rs/serde/pull/1191")]
-    NonZeroI8(i8);
-    NonZeroI16(i16);
-    NonZeroI32(i32);
-    NonZeroI64(i64);
-    NonZeroI128(i128);
-    NonZeroIsize(isize);
 }
 
 /// Provides intentionally-wrapped arithmetic on `T`.
