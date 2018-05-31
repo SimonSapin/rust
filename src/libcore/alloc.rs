@@ -455,7 +455,7 @@ impl From<AllocErr> for CollectionAllocErr {
 /// * `Layout` queries and calculations in general must be correct. Callers of
 ///   this trait are allowed to rely on the contracts defined on each method,
 ///   and implementors must ensure such contracts remain true.
-#[unstable(feature = "allocator_api", issue = "32838")]
+#[stable(feature = "global_alloc", since = "1.28.0")]
 pub unsafe trait GlobalAlloc {
     /// Allocate memory as described by the given `layout`.
     ///
@@ -487,6 +487,7 @@ pub unsafe trait GlobalAlloc {
     /// Clients wishing to abort computation in response to an
     /// allocation error are encouraged to call the [`oom`] function,
     /// rather than directly invoking `panic!` or similar.
+    #[stable(feature = "global_alloc", since = "1.28.0")]
     unsafe fn alloc(&self, layout: Layout) -> *mut u8;
 
     /// Deallocate the block of memory at the given `ptr` pointer with the given `layout`.
@@ -501,6 +502,7 @@ pub unsafe trait GlobalAlloc {
     ///
     /// * `layout` must be the same layout that was used
     ///   to allocated that block of memory,
+    #[stable(feature = "global_alloc", since = "1.28.0")]
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout);
 
     /// Behaves like `alloc`, but also ensures that the contents
@@ -520,6 +522,7 @@ pub unsafe trait GlobalAlloc {
     /// Clients wishing to abort computation in response to an
     /// allocation error are encouraged to call the [`oom`] function,
     /// rather than directly invoking `panic!` or similar.
+    #[stable(feature = "global_alloc", since = "1.28.0")]
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
         let size = layout.size();
         let ptr = self.alloc(layout);
@@ -577,6 +580,7 @@ pub unsafe trait GlobalAlloc {
     /// Clients wishing to abort computation in response to a
     /// reallocation error are encouraged to call the [`oom`] function,
     /// rather than directly invoking `panic!` or similar.
+    #[stable(feature = "global_alloc", since = "1.28.0")]
     unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
         let new_layout = Layout::from_size_align_unchecked(new_size, layout.align());
         let new_ptr = self.alloc(new_layout);
