@@ -18,7 +18,7 @@ use mem;
 use usize;
 use ptr::{self, NonNull};
 
-#[unstable(feature = "allocator_api", issue = "32838")]
+#[unstable(feature = "alloc_internals", issue = "0")]
 #[cfg(stage0)]
 pub type Opaque = u8;
 
