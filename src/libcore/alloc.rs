@@ -45,7 +45,7 @@ fn size_align<T>() -> (usize, usize) {
 /// requests have positive size. A caller to the `Alloc::alloc`
 /// method must either ensure that conditions like this are met, or
 /// use specific allocators with looser requirements.)
-#[unstable(feature = "allocator_api", issue = "32838")]
+#[stable(feature = "alloc_layout", since = "1.28.0")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Layout {
     // size of the requested block of memory, measured in bytes.
@@ -76,7 +76,7 @@ impl Layout {
     /// * `size`, when rounded up to the nearest multiple of `align`,
     ///    must not overflow (i.e. the rounded value must be less than
     ///    `usize::MAX`).
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
     #[inline]
     pub fn from_size_align(size: usize, align: usize) -> Result<Self, LayoutErr> {
         if !align.is_power_of_two() {
@@ -113,24 +113,25 @@ impl Layout {
     /// This function is unsafe as it does not verify that `align` is
     /// a power-of-two nor `size` aligned to `align` fits within the
     /// address space (i.e. the `Layout::from_size_align` preconditions).
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
     #[inline]
     pub unsafe fn from_size_align_unchecked(size: usize, align: usize) -> Self {
         Layout { size: size, align: align }
     }
 
     /// The minimum size in bytes for a memory block of this layout.
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
     #[inline]
     pub fn size(&self) -> usize { self.size }
 
     /// The minimum byte alignment for a memory block of this layout.
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
     #[inline]
     pub fn align(&self) -> usize { self.align }
 
     /// Constructs a `Layout` suitable for holding a value of type `T`.
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
+    #[inline]
     pub fn new<T>() -> Self {
         let (size, align) = size_align::<T>();
         // Note that the align is guaranteed by rustc to be a power of two and
@@ -146,7 +147,8 @@ impl Layout {
     /// Produces layout describing a record that could be used to
     /// allocate backing structure for `T` (which could be a trait
     /// or other unsized type like a slice).
-    #[unstable(feature = "allocator_api", issue = "32838")]
+    #[stable(feature = "alloc_layout", since = "1.28.0")]
+    #[inline]
     pub fn for_value<T: ?Sized>(t: &T) -> Self {
         let (size, align) = (mem::size_of_val(t), mem::align_of_val(t));
         // See rationale in `new` for why this us using an unsafe variant below
@@ -325,14 +327,14 @@ impl Layout {
 /// The parameters given to `Layout::from_size_align`
 /// or some other `Layout` constructor
 /// do not satisfy its documented constraints.
-#[unstable(feature = "allocator_api", issue = "32838")]
+#[stable(feature = "alloc_layout", since = "1.28.0")]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct LayoutErr {
     private: ()
 }
 
 // (we need this for downstream impl of trait Error)
-#[unstable(feature = "allocator_api", issue = "32838")]
+#[stable(feature = "alloc_layout", since = "1.28.0")]
 impl fmt::Display for LayoutErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("invalid parameters to Layout::from_size_align")
