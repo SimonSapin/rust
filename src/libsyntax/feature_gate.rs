@@ -357,8 +357,6 @@ declare_features! (
     // Trait aliases
     (active, trait_alias, "1.24.0", Some(41517), None),
 
-    // global allocators and their internals
-    (active, global_allocator, "1.20.0", Some(27389), None),
     // rustc internal
     (active, allocator_internals, "1.20.0", None, None),
 
@@ -609,6 +607,8 @@ declare_features! (
     (accepted, fn_must_use, "1.27.0", Some(43302), None),
     // Allows use of the :lifetime macro fragment specifier
     (accepted, macro_lifetime_matcher, "1.27.0", Some(34303), None),
+    // The #[global_allocator] attribute
+    (accepted, global_allocator, "1.28.0", Some(27389), None),
 );
 
 // If you change this, please modify src/doc/unstable-book as well. You must
@@ -770,11 +770,7 @@ pub const BUILTIN_ATTRIBUTES: &'static [(&'static str, AttributeType, AttributeG
                                              "the `#[rustc_const_unstable]` attribute \
                                               is an internal feature",
                                              cfg_fn!(rustc_const_unstable))),
-    ("global_allocator", Normal, Gated(Stability::Unstable,
-                                       "global_allocator",
-                                       "the `#[global_allocator]` attribute is \
-                                        an experimental feature",
-                                       cfg_fn!(global_allocator))),
+    ("global_allocator", Normal, Ungated),
     ("default_lib_allocator", Whitelisted, Gated(Stability::Unstable,
                                             "allocator_internals",
                                             "the `#[default_lib_allocator]` \
