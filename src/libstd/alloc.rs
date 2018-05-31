@@ -10,15 +10,18 @@
 
 //! Memory allocation APIs
 
-#![unstable(issue = "32838", feature = "allocator_api")]
-
-#[doc(inline)] pub use alloc_crate::alloc::{Global, Layout, oom};
-#[doc(inline)] pub use alloc_crate::alloc::{alloc, alloc_zeroed, dealloc, realloc};
-#[doc(inline)] pub use alloc_system::System;
-#[doc(inline)] pub use core::alloc::*;
+#![stable(feature = "alloc_module", since = "1.28.0")]
 
 use core::sync::atomic::{AtomicPtr, Ordering};
 use core::{mem, ptr};
+
+#[stable(feature = "alloc_module", since = "1.28.0")]
+#[doc(inline)]
+pub use alloc_crate::alloc::*;
+
+#[unstable(feature = "allocator_api", issue = "32838")]
+#[doc(inline)]
+pub use alloc_system::System;
 
 static HOOK: AtomicPtr<()> = AtomicPtr::new(ptr::null_mut());
 
@@ -33,6 +36,7 @@ static HOOK: AtomicPtr<()> = AtomicPtr::new(ptr::null_mut());
 /// about the allocation that failed.
 ///
 /// The OOM hook is a global resource.
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub fn set_oom_hook(hook: fn(Layout) -> !) {
     HOOK.store(hook as *mut (), Ordering::SeqCst);
 }
@@ -42,6 +46,7 @@ pub fn set_oom_hook(hook: fn(Layout) -> !) {
 /// *See also the function [`set_oom_hook`].*
 ///
 /// If no custom hook is registered, the default hook will be returned.
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub fn take_oom_hook() -> fn(Layout) -> ! {
     let hook = HOOK.swap(ptr::null_mut(), Ordering::SeqCst);
     if hook.is_null() {
@@ -58,6 +63,7 @@ fn default_oom_hook(layout: Layout) -> ! {
 #[cfg(not(test))]
 #[doc(hidden)]
 #[lang = "oom"]
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub extern fn rust_oom(layout: Layout) -> ! {
     let hook = HOOK.load(Ordering::SeqCst);
     let hook: fn(Layout) -> ! = if hook.is_null() {
@@ -71,6 +77,7 @@ pub extern fn rust_oom(layout: Layout) -> ! {
 #[cfg(not(test))]
 #[doc(hidden)]
 #[allow(unused_attributes)]
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub mod __default_lib_allocator {
     use super::{System, Layout, GlobalAlloc};
     // for symbol names src/librustc/middle/allocator.rs

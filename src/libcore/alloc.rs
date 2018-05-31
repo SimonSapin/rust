@@ -10,12 +10,7 @@
 
 //! Memory allocation APIs
 
-#![unstable(feature = "allocator_api",
-            reason = "the precise API and guarantees it provides may be tweaked \
-                      slightly, especially to possibly take into account the \
-                      types being stored to make room for a future \
-                      tracing garbage collector",
-            issue = "32838")]
+#![stable(feature = "alloc_module", since = "1.28.0")]
 
 use cmp;
 use fmt;
@@ -23,11 +18,13 @@ use mem;
 use usize;
 use ptr::{self, NonNull};
 
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[cfg(stage0)]
 pub type Opaque = u8;
 
 /// Represents the combination of a starting address and
 /// a total capacity of the returned block.
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[derive(Debug)]
 pub struct Excess(pub NonNull<u8>, pub usize);
 
@@ -48,6 +45,7 @@ fn size_align<T>() -> (usize, usize) {
 /// requests have positive size. A caller to the `Alloc::alloc`
 /// method must either ensure that conditions like this are met, or
 /// use specific allocators with looser requirements.)
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Layout {
     // size of the requested block of memory, measured in bytes.
@@ -78,6 +76,7 @@ impl Layout {
     /// * `size`, when rounded up to the nearest multiple of `align`,
     ///    must not overflow (i.e. the rounded value must be less than
     ///    `usize::MAX`).
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn from_size_align(size: usize, align: usize) -> Result<Self, LayoutErr> {
         if !align.is_power_of_two() {
@@ -114,20 +113,24 @@ impl Layout {
     /// This function is unsafe as it does not verify that `align` is
     /// a power-of-two nor `size` aligned to `align` fits within the
     /// address space (i.e. the `Layout::from_size_align` preconditions).
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub unsafe fn from_size_align_unchecked(size: usize, align: usize) -> Self {
         Layout { size: size, align: align }
     }
 
     /// The minimum size in bytes for a memory block of this layout.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn size(&self) -> usize { self.size }
 
     /// The minimum byte alignment for a memory block of this layout.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn align(&self) -> usize { self.align }
 
     /// Constructs a `Layout` suitable for holding a value of type `T`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn new<T>() -> Self {
         let (size, align) = size_align::<T>();
         // Note that the align is guaranteed by rustc to be a power of two and
@@ -143,6 +146,7 @@ impl Layout {
     /// Produces layout describing a record that could be used to
     /// allocate backing structure for `T` (which could be a trait
     /// or other unsized type like a slice).
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn for_value<T: ?Sized>(t: &T) -> Self {
         let (size, align) = (mem::size_of_val(t), mem::align_of_val(t));
         // See rationale in `new` for why this us using an unsafe variant below
@@ -168,6 +172,7 @@ impl Layout {
     ///
     /// Panics if the combination of `self.size` and the given `align`
     /// violates the conditions listed in `from_size_align`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn align_to(&self, align: usize) -> Self {
         Layout::from_size_align(self.size, cmp::max(self.align, align)).unwrap()
@@ -189,6 +194,7 @@ impl Layout {
     /// to be less than or equal to the alignment of the starting
     /// address for the whole allocated block of memory. One way to
     /// satisfy this constraint is to ensure `align <= self.align`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn padding_needed_for(&self, align: usize) -> usize {
         let len = self.size();
@@ -224,6 +230,7 @@ impl Layout {
     /// of each element in the array.
     ///
     /// On arithmetic overflow, returns `None`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     #[inline]
     pub fn repeat(&self, n: usize) -> Result<(Self, usize), LayoutErr> {
         let padded_size = self.size.checked_add(self.padding_needed_for(self.align))
@@ -244,6 +251,7 @@ impl Layout {
     /// (assuming that the record itself starts at offset 0).
     ///
     /// On arithmetic overflow, returns `None`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn extend(&self, next: Self) -> Result<(Self, usize), LayoutErr> {
         let new_align = cmp::max(self.align, next.align);
         let realigned = Layout::from_size_align(self.size, new_align)?;
@@ -271,6 +279,7 @@ impl Layout {
     /// aligned.
     ///
     /// On arithmetic overflow, returns `None`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn repeat_packed(&self, n: usize) -> Result<Self, LayoutErr> {
         let size = self.size().checked_mul(n).ok_or(LayoutErr { private: () })?;
         Layout::from_size_align(size, self.align)
@@ -291,6 +300,7 @@ impl Layout {
     ///  `extend`.)
     ///
     /// On arithmetic overflow, returns `None`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn extend_packed(&self, next: Self) -> Result<(Self, usize), LayoutErr> {
         let new_size = self.size().checked_add(next.size())
             .ok_or(LayoutErr { private: () })?;
@@ -301,6 +311,7 @@ impl Layout {
     /// Creates a layout describing the record for a `[T; n]`.
     ///
     /// On arithmetic overflow, returns `None`.
+    #[unstable(feature = "allocator_api", issue = "32838")]
     pub fn array<T>(n: usize) -> Result<Self, LayoutErr> {
         Layout::new::<T>()
             .repeat(n)
@@ -314,12 +325,14 @@ impl Layout {
 /// The parameters given to `Layout::from_size_align`
 /// or some other `Layout` constructor
 /// do not satisfy its documented constraints.
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct LayoutErr {
     private: ()
 }
 
 // (we need this for downstream impl of trait Error)
+#[unstable(feature = "allocator_api", issue = "32838")]
 impl fmt::Display for LayoutErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("invalid parameters to Layout::from_size_align")
@@ -330,10 +343,12 @@ impl fmt::Display for LayoutErr {
 /// that may be due to resource exhaustion or to
 /// something wrong when combining the given input arguments with this
 /// allocator.
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct AllocErr;
 
 // (we need this for downstream impl of trait Error)
+#[unstable(feature = "allocator_api", issue = "32838")]
 impl fmt::Display for AllocErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("memory allocation failed")
@@ -344,9 +359,11 @@ impl fmt::Display for AllocErr {
 /// `shrink_in_place` were unable to reuse the given memory block for
 /// a requested layout.
 // FIXME: should this be in libcore or liballoc?
+#[unstable(feature = "allocator_api", issue = "32838")]
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct CannotReallocInPlace;
 
+#[unstable(feature = "allocator_api", issue = "32838")]
 impl CannotReallocInPlace {
     pub fn description(&self) -> &str {
         "cannot reallocate allocator's memory in place"
@@ -354,6 +371,7 @@ impl CannotReallocInPlace {
 }
 
 // (we need this for downstream impl of trait Error)
+#[unstable(feature = "allocator_api", issue = "32838")]
 impl fmt::Display for CannotReallocInPlace {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.description())
@@ -435,6 +453,7 @@ impl From<AllocErr> for CollectionAllocErr {
 /// * `Layout` queries and calculations in general must be correct. Callers of
 ///   this trait are allowed to rely on the contracts defined on each method,
 ///   and implementors must ensure such contracts remain true.
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub unsafe trait GlobalAlloc {
     /// Allocate memory as described by the given `layout`.
     ///
@@ -650,6 +669,7 @@ pub unsafe trait GlobalAlloc {
 ///
 /// Note that this list may get tweaked over time as clarifications are made in
 /// the future.
+#[unstable(feature = "allocator_api", issue = "32838")]
 pub unsafe trait Alloc {
 
     // (Note: some existing allocators have unspecified but well-defined
