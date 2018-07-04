@@ -39,3 +39,6 @@ syntax_ext = { path = "../libsyntax_ext" }
 syntax_pos = { path = "../libsyntax_pos" }
 
 ar = "0.3.0"
+
+[target.'cfg(not(windows))'.dependencies]  # FIXME what platforms more precisely?
+jemallocator = { version = "0.1.9", features = ["unprefixed_malloc_on_supported_platforms"] }

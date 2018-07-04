@@ -33,6 +33,8 @@ extern crate arena;
 extern crate getopts;
 extern crate graphviz;
 extern crate env_logger;
+#[cfg(not(windows))]
+extern crate jemallocator;
 #[cfg(unix)]
 extern crate libc;
 extern crate rustc_rayon as rayon;
@@ -117,6 +119,11 @@ pub mod profile;
 pub mod driver;
 pub mod pretty;
 mod derive_registrar;
+
+#[cfg(not(windows))]
+#[cfg(not(stage0))]
+#[global_allocator]
+static A: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 pub mod target_features {
     use syntax::ast;
