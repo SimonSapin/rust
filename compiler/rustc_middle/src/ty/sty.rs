@@ -2292,10 +2292,9 @@ impl<'tcx> Ty<'tcx> {
 
             // type parameters only have unit metadata if they're sized, so return true
             // to make sure we double check this during confirmation
-            ty::Param(_) |  ty::Projection(_) => (tcx.types.unit, true),
+            ty::Param(_) |  ty::Projection(_) | ty::Opaque(..) => (tcx.types.unit, true),
 
-            ty::Opaque(..)
-            | ty::Infer(ty::TyVar(_))
+            ty::Infer(ty::TyVar(_))
             | ty::Bound(..)
             | ty::Placeholder(..)
             | ty::Infer(ty::FreshTy(_) | ty::FreshIntTy(_) | ty::FreshFloatTy(_)) => {
